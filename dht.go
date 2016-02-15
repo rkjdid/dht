@@ -157,6 +157,8 @@ type DHT struct {
 	pingRequest            chan *remoteNode
 	portRequest            chan int
 	stop                   chan bool
+	localDownload          chan InfoHash
+
 	clientThrottle         *nettools.ClientThrottle
 	store                  *dhtStore
 	tokenSecrets           []string
@@ -189,6 +191,7 @@ func New(config *Config) (node *DHT, err error) {
 		nodesRequest:   make(chan ihReq, 100),
 		pingRequest:    make(chan *remoteNode),
 		portRequest:    make(chan int),
+		localDownload:  make(chan InfoHash),
 		clientThrottle: nettools.NewThrottler(cfg.ClientPerMinuteLimit, cfg.ThrottlerTrackedClients),
 		tokenSecrets:   []string{newTokenSecret(), newTokenSecret()},
 	}
@@ -233,6 +236,13 @@ type Logger interface {
 type ihReq struct {
 	ih       InfoHash
 	announce bool
+}
+
+// AddLocalDownload tells the DHT that we're active on an infohash.
+// It allows to respond to a remote get_peers with an announce_peer,
+// while not explicitly requesting peers ourselves.
+func (d *DHT) AddLocalDownload(ih string) {
+	d.localDownload <- InfoHash(ih)
 }
 
 // PeersRequest asks the DHT to search for more peers for the infoHash
@@ -408,6 +418,8 @@ func (d *DHT) loop() {
 			return
 		case addr := <-d.remoteNodeAcquaintance:
 			d.helloFromPeer(addr)
+		case ih := <-d.localDownload:
+			d.peerStore.addLocalDownload(ih)
 		case req := <-d.peersRequest:
 			// torrent server is asking for more peers for infoHash.  Ask the closest
 			// nodes for directions. The goroutine will write into the
