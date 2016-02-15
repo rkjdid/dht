@@ -136,29 +136,29 @@ func (r *remoteNode) wasContactedRecently(ih InfoHash) bool {
 
 type getPeersResponse struct {
 	// TODO: argh, values can be a string depending on the client (e.g: original bittorrent).
-	Values []string "values"
-	Id     string   "id"
-	Nodes  string   "nodes"
-	Nodes6 string   "nodes6"
-	Token  string   "token"
+	Values []string `bencode:"values"`
+	Id     string   `bencode:"id"`
+	Nodes  string   `bencode:"nodes"`
+	Nodes6 string   `bencode:"nodes6"`
+	Token  string   `bencode:"token"`
 }
 
 type answerType struct {
-	Id       string   "id"
-	Target   string   "target"
-	InfoHash InfoHash "info_hash" // should probably be a string.
-	Port     int      "port"
-	Token    string   "token"
+	Id       string   `bencode:"id"`
+	Target   string   `bencode:"target"`
+	InfoHash InfoHash `bencode:"info_hash"` // should probably be a string.
+	Port     int      `bencode:"port"`
+	Token    string   `bencode:"token"`
 }
 
 // Generic stuff we read from the wire, not knowing what it is. This is as generic as can be.
 type responseType struct {
-	T string           "t"
-	Y string           "y"
-	Q string           "q"
-	R getPeersResponse "r"
-	E []string         "e"
-	A answerType       "a"
+	T string           `bencode:"t"`
+	Y string           `bencode:"y"`
+	Q string           `bencode:"q"`
+	R getPeersResponse `bencode:"r"`
+	E []string         `bencode:"e"`
+	A answerType       `bencode:"a"`
 	// Unsupported mainline extension for client identification.
 	// V string(?)	"v"
 }
@@ -198,16 +198,16 @@ func readResponse(p packetType) (response responseType, err error) {
 
 // Message to be sent out in the wire. Must not have any extra fields.
 type queryMessage struct {
-	T string                 "t"
-	Y string                 "y"
-	Q string                 "q"
-	A map[string]interface{} "a"
+	T string                 `bencode:"t"`
+	Y string                 `bencode:"y"`
+	Q string                 `bencode:"q"`
+	A map[string]interface{} `bencode:"a"`
 }
 
 type replyMessage struct {
-	T string                 "t"
-	Y string                 "y"
-	R map[string]interface{} "r"
+	T string                 `bencode:"t"`
+	Y string                 `bencode:"y"`
+	R map[string]interface{} `bencode:"r"`
 }
 
 type packetType struct {
