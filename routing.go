@@ -218,7 +218,7 @@ func (n *nTree) isOK(ih InfoHash) bool {
 		return false
 	}
 
-	recent := r.wasContactedRecently(ih)
+	recent := r.wasContactedRecently(ih, "-")
 	if log.V(4) {
 		log.Infof("wasContactedRecently for ih=%x in node %x@%v returned %v", ih, r.id, r.address, recent)
 	}

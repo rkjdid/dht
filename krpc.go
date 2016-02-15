@@ -16,7 +16,7 @@ import (
 )
 
 // Search a node again after some time.
-var searchRetryPeriod = 15 * time.Second
+var searchRetryPeriod = 5 * time.Second
 
 // Owned by the DHT engine.
 type remoteNode struct {
@@ -109,9 +109,8 @@ func (r *remoteNode) newQuery(transType string) (transId string) {
 }
 
 // wasContactedRecently returns true if a node was contacted recently _and_
-// one of the recent queries (not necessarily the last) was about the ih. If
-// the ih is different at each time, it will keep returning false.
-func (r *remoteNode) wasContactedRecently(ih InfoHash) bool {
+// one of the recent queries was of type qtype (e.g. find_node) or about infohash ih.
+func (r *remoteNode) wasContactedRecently(ih InfoHash, qtype string) bool {
 	if len(r.pendingQueries) == 0 && len(r.pastQueries) == 0 {
 		return false
 	}
@@ -119,7 +118,7 @@ func (r *remoteNode) wasContactedRecently(ih InfoHash) bool {
 		return false
 	}
 	for _, q := range r.pendingQueries {
-		if q.ih == ih {
+		if q.ih == ih || q.Type == qtype {
 			return true
 		}
 	}
@@ -127,7 +126,7 @@ func (r *remoteNode) wasContactedRecently(ih InfoHash) bool {
 		return false
 	}
 	for _, q := range r.pastQueries {
-		if q.ih == ih {
+		if q.ih == ih || q.Type == qtype {
 			return true
 		}
 	}

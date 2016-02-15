@@ -675,6 +675,10 @@ func (d *DHT) ping(address string) {
 }
 
 func (d *DHT) pingNode(r *remoteNode) {
+	if r.wasContactedRecently(InfoHash("-"), "ping") {
+		log.V(5).Infof("skipping 'ping' query for remote: %s, we already asked recently", r.address)
+		return
+	}
 	log.V(3).Infof("DHT: ping => %+v", r.address)
 	t := r.newQuery("ping")
 
@@ -686,6 +690,10 @@ func (d *DHT) pingNode(r *remoteNode) {
 
 func (d *DHT) getPeersFrom(r *remoteNode, ih InfoHash) {
 	if r == nil {
+		return
+	}
+	if r.wasContactedRecently(ih, "-") {
+		log.V(5).Infof("skipping 'get_peers %x' query for remote: %s - we already asked recently", ih, r.address)
 		return
 	}
 	totalSentGetPeers.Add(1)
@@ -711,6 +719,10 @@ func (d *DHT) getPeersFrom(r *remoteNode, ih InfoHash) {
 
 func (d *DHT) findNodeFrom(r *remoteNode, id string) {
 	if r == nil {
+		return
+	}
+	if r.wasContactedRecently(InfoHash("-"), "find_node") {
+		log.V(5).Infof("skipping 'find_node' query for remote: %s - we already asked recently", r.address)
 		return
 	}
 	totalSentFindNode.Add(1)
